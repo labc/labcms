@@ -1,3 +1,10 @@
+"""
+Loads static pages from the filesystem using the Markdown syntax with the 
+[Meta-Data] extension for extra values.
+
+[Meta-Data]: http://packages.python.org/Markdown/extensions/meta_data.html
+"""
+
 from django.template import loader, RequestContext
 from django.http import Http404, HttpResponse, HttpResponsePermanentRedirect
 from django.conf import settings
@@ -45,6 +52,9 @@ class StaticPage(object):
 		md = markdown.Markdown(extensions=['meta']) #TODO: Add extensions as a configuration option
 		self.document = md.convert(self.text)
 		self.meta = md.Meta
+	
+	def getTitle(self):
+		return self.meta.get('Title', self._title)
 
 def findpage(url):
 	"""findpage(string) -> StaticPage
@@ -80,6 +90,7 @@ def render(request, url):
 	page = findpage(url)
 	
 	c = RequestContext(request, {
+		'title': page.getTitle(),
 		'data': page.meta,
 		'text': mark_safe(page.document),
 	})
