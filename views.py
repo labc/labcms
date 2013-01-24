@@ -26,10 +26,10 @@ class StaticPage(object):
 				f = codecs.open(fn, mode="rU", encoding="utf-8")
 			else:
 				f = fn
-				if hasattr(f, 'name')
+				if hasattr(f, 'name'):
 					self._title = os.path.basename(f.name)
 			
-			self.loadFile(f):
+			self.loadFile(f)
 		
 		if 'name' in kwargs:
 			self._title = os.path.basename(kwargs['name'])
@@ -50,21 +50,22 @@ def findpage(url):
 	"""findpage(string) -> StaticPage
 	Returns the StaticPage for the given URL, or raises Http404
 	"""
-	if url[0] == '/':
-		url = url[1:]
-	
+		
 	# Remove queries
-	if '?' in url:
-		i = url.find('?')
-		url = url[:i]
+#	if '?' in url:
+#		i = url.find('?')
+#		url = url[:i]
 	
 	# Just flat-out don't allow current directory or parent directory
-	if url[:2] == './'  or  '/./' in url or url[-2] == '/.':
-		raise Http404
-	if url[:3] == '../' or '/../' in url or url[-2] == '/..':
-		raise Http404
+#	if url.startswith('./')  or  '/./' in url or url.endswith('/.'):
+#		raise Http404
+#	if url.startswith('../') or '/../' in url or url.endswith('/..'):
+#		raise Http404
 	
-	for pagedir in config.STATICPAGES_DIRS:
+	if url.endswith('/'):
+		url = url[:-1]
+	
+	for pagedir in settings.STATICPAGES_DIRS:
 		fn = os.path.join(pagedir, url)
 		if os.path.exist(fn):
 			return StaticPage(fn)
@@ -79,14 +80,14 @@ def render(request, url):
 	page = findpage(url)
 	
 	c = RequestContext(request, {
-        'data': page.meta,
-        'text': mark_safe(page.document),
-    })
-    
-    if 'template' in page.meta:
-        t = loader.select_template((page.meta['template'], config.STATIC_TEMPLATE))
-    else:
-        t = loader.get_template(config.STATIC_TEMPLATE)
-    
-    response = HttpResponse(t.render(c))
+		'data': page.meta,
+		'text': mark_safe(page.document),
+	})
+	
+	if 'template' in page.meta:
+		t = loader.select_template((page.meta['template'], settings.STATIC_TEMPLATE))
+	else:
+		t = loader.get_template(settings.STATIC_TEMPLATE)
+	
+	response = HttpResponse(t.render(c))
 	return response
