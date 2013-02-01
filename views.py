@@ -52,7 +52,6 @@ class StaticPage(object):
 		md = markdown.Markdown(extensions=['meta']) #TODO: Add extensions as a configuration option
 		self.document = mark_safe(md.convert(self.text))
 		self.meta = md.Meta
-		print repr(self.meta)
 	
 	def title(self):
 		"""sp.title() -> string
