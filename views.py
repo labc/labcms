@@ -28,7 +28,7 @@ class StaticPage(object):
 		"""
 		self._title = None
 		if fn is not None:
-			if typeof(fn, basestring):
+			if isinstance(fn, basestring):
 				self._title = os.path.basename(fn)
 				f = codecs.open(fn, mode="rU", encoding="utf-8")
 			else:
@@ -50,11 +50,15 @@ class StaticPage(object):
 		
 		self.text = file.read()
 		md = markdown.Markdown(extensions=['meta']) #TODO: Add extensions as a configuration option
-		self.document = md.convert(self.text)
+		self.document = mark_safe(md.convert(self.text))
 		self.meta = md.Meta
+		print repr(self.meta)
 	
-	def getTitle(self):
-		return self.meta.get('Title', self._title)
+	def title(self):
+		"""sp.title() -> string
+		Comes up with a title for the page.
+		"""
+		return self.meta.get('title', [self._title])[0]
 
 def findpage(url):
 	"""findpage(string) -> StaticPage
@@ -77,7 +81,7 @@ def findpage(url):
 	
 	for pagedir in settings.STATICPAGES_DIRS:
 		fn = os.path.join(pagedir, url)
-		if os.path.exist(fn):
+		if os.path.exists(fn):
 			return StaticPage(fn)
 	else:
 		raise Http404
@@ -90,9 +94,7 @@ def render(request, url):
 	page = findpage(url)
 	
 	c = RequestContext(request, {
-		'title': page.getTitle(),
-		'data': page.meta,
-		'text': mark_safe(page.document),
+		'page': page,
 	})
 	
 	if 'template' in page.meta:
